@@ -239,7 +239,7 @@
             <div>
             <label>Game Mode</label>
             <select id="hard" name="hard">
-                <option value=11.1>Daily Challenge</option>
+                <option value=14.1>Daily Challenge</option>
                 <option value=11>Easy</option>
                 <option value=14>Medium</option>
                 <option value=16>Hard</option>
@@ -742,7 +742,7 @@ function setCircleDasharray() {
 
      if(localStorage.getItem('difficulty')!=null){
        //console.log(localStorage.getItem('difficulty'));
-       document.getElementById('hard').value=localStorage.getItem('difficulty');
+       if(Number(document.getElementById('hard').value).isInteger){document.getElementById('hard').value=localStorage.getItem('difficulty');}
      }
     
 
@@ -753,7 +753,7 @@ function setCircleDasharray() {
     
     let randrow=0;
 
-    if (Number(document.getElementById('hard').value)==11.1){
+    if (Number(document.getElementById('hard').value)==14.1){
         btn.style.display="none";
         // if(navigator.share){btn.style.display = "block";}else{btn.style.display = "none";}
         document.getElementById('code').style.visibility = 'hidden';
@@ -1141,7 +1141,7 @@ controller: {dragPan: false}
     //newMap(document.getElementById('score-value').innerHTML, data);
     if (Number.isInteger(Number(document.getElementById('hard').value))){document.getElementById('next').style.visibility ='visible';}
 
-    if(Number(document.getElementById('hard').value)==11.1){
+    if(Number(document.getElementById('hard').value)==14.1){
             if (navigator.share) {
     // Show button if it supports webShareAPI
     btn.style.display = "block";
