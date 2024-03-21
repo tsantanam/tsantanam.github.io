@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>John Portman Fact Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #logo {
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
+    #fact {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    #fact-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #fact-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img id="logo" src="portman.png" alt="John Portman Logo">
+    <div id="fact"></div>
+    <button id="fact-button">Click for random John Portman fact</button>
+  </div>
+
+  <script>
+    const facts = [
+      "John Portman was an American architect and real estate developer known for his innovative hotel designs.",
+      "He is credited with developing the concept of the modern atrium hotel.",
+      "Portman's most famous works include the Peachtree Center in Atlanta and the Bonaventure Hotel in Los Angeles.",
+      "He was also an accomplished artist and sculptor.",
+      "Portman's architectural style is characterized by large-scale, futuristic designs with emphasis on interior spaces."
+    ];
+
+    const factDisplay = document.getElementById('fact');
+    const factButton = document.getElementById('fact-button');
+
+    factButton.addEventListener('click', () => {
+      const randomIndex = Math.floor(Math.random() * facts.length);
+      const randomFact = facts[randomIndex];
+      factDisplay.textContent = randomFact;
+    });
+  </script>
+</body>
+</html>
