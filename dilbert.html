@@ -1,18 +1,15 @@
-#image {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dilbert Comic Reader</title>
+    <style>
+        #image {
             max-width: 100%;
             max-height: 500px;
             margin: 20px auto;
             display: block;
-        }
-        .arrows {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .arrow-button {
-            font-size: 24px;
-            cursor: pointer;
         }
         .download-button {
             margin-top: 10px;
@@ -29,13 +26,9 @@
 </head>
 <body>
     <h1>Dilbert Comic Reader</h1>
-    <p>Enter a date from 04/16/1989 to 03/26/2023 and hit submit to get the comic image!</p>
+    <p>Enter a date from 04/16/1989 to 03/26/2023 and hit submit to get the comic image (if archived)!</p>
 
-    <div class="arrows">
-        <button class="arrow-button" onclick="changeDate(-1)">&#8592; Previous</button>
-        <input type="date" id="dateInput" onchange="getComicImage()">
-        <button class="arrow-button" onclick="changeDate(1)">Next &#8594;</button>
-    </div>
+    <input type="date" id="dateInput" onchange="getComicImage()">
     
     <button onclick="getComicImage()">Submit</button>
     <button class="download-button" onclick="downloadImage()">Download Comic</button>
@@ -57,21 +50,15 @@
             document.getElementById('dateInput').value = formatDate(selectedDate);
         }
 
-        function changeDate(dayIncrement) {
-            const currentDate = new Date(document.getElementById('dateInput').value);
-            currentDate.setDate(currentDate.getDate() + dayIncrement);
-            selectedDate = currentDate;
-            updateDateInput();
-            getComicImage();
-        }
-
         async function getComicImage() {
-            selectedDate = new Date(document.getElementById('dateInput').value);
-            const date = formatDate(selectedDate);
+            const inputDate = new Date(document.getElementById('dateInput').value);
+            if (!isNaN(inputDate.getTime())) {
+                selectedDate = inputDate;
+            }
 
+            const date = formatDate(selectedDate);
             const proxyURL = 'https://api.allorigins.win/raw?url=';
             const waybackURL = `${proxyURL}https://web.archive.org/web/https://dilbert.com/strip/${date}`;
-
 
             document.getElementById('result').innerHTML = 'Loading...';
 
@@ -79,7 +66,6 @@
                 const response = await fetch(waybackURL);
                 const text = await response.text();
 
-                // Extract the image URL using regex
                 const regex = /<img class=\"img-responsive img-comic\"[^>]*src=\"(https:[^\"]+)\"/;
                 const match = text.match(regex);
 
