@@ -32,6 +32,20 @@
             font-size: 24px;
             cursor: pointer;
         }
+        iframe {
+            display: none;
+        }
+        .download-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .download-button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -45,9 +59,12 @@
     </div>
     
     <button onclick="getComicImage()">Submit</button>
+    <button class="download-button" onclick="downloadImage()">Download Comic</button>
 
     <div id="result"></div>
     <img id="image" src="" alt="Comic Image" style="display: none;">
+
+    <iframe id="comicFrame" sandbox="allow-same-origin"></iframe>
 
     <script>
         let selectedDate = new Date();
@@ -69,39 +86,44 @@
             getComicImage();
         }
 
-        async function getComicImage() {
-            // Always capture the latest date from input
+        function getComicImage() {
             selectedDate = new Date(document.getElementById('dateInput').value);
             const date = formatDate(selectedDate);
 
-            // Use CORS Anywhere to bypass CORS issue
-            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
             const waybackURL = `https://web.archive.org/web/https://dilbert.com/strip/${date}`;
+            const iframe = document.getElementById('comicFrame');
 
             document.getElementById('result').innerHTML = 'Loading...';
+            iframe.src = waybackURL;
 
-            try {
-                const response = await fetch(proxyUrl + waybackURL);
-                const text = await response.text();
-
-                const regex = /<img class="img-responsive img-comic"[^>]*src="([^\"]+)"/;
-                const match = regex.exec(text);
-
-                if (match && match[1]) {
-                    const imgSrc = match[1];
-                    const secondUrl = imgSrc.split('https')[1];
-                    const finalUrl = 'https' + secondUrl;
-
-                    const imageElement = document.getElementById('image');
-                    imageElement.src = finalUrl;
-                    imageElement.style.display = 'block';
-                    document.getElementById('result').innerHTML = 'Comic Image Loaded:';
-                } else {
-                    document.getElementById('result').innerHTML = 'No image found for the specified date.';
+            iframe.onload = () => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    const imgElement = iframeDoc.querySelector('img.img-responsive.img-comic');
+                    if (imgElement) {
+                        const imageElement = document.getElementById('image');
+                        imageElement.src = imgElement.src;
+                        imageElement.style.display = 'block';
+                        document.getElementById('result').innerHTML = 'Comic Image Loaded:';
+                    } else {
+                        document.getElementById('result').innerHTML = 'No image found for the specified date.';
+                    }
+                } catch (error) {
+                    console.error('Error accessing iframe content:', error);
+                    document.getElementById('result').innerHTML = 'Error loading the image.';
                 }
-            } catch (error) {
-                console.error('Error fetching the Wayback Machine page:', error);
-                document.getElementById('result').innerHTML = 'Error loading the image.';
+            };
+        }
+
+        function downloadImage() {
+            const imageElement = document.getElementById('image');
+            if (imageElement.src) {
+                const link = document.createElement('a');
+                link.href = imageElement.src;
+                link.download = `dilbert-comic-${formatDate(selectedDate)}.jpg`;
+                link.click();
+            } else {
+                alert('No image to download. Please fetch a comic first.');
             }
         }
 
