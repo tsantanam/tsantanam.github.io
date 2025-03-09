@@ -85,7 +85,9 @@
             selectedDate = new Date(document.getElementById('dateInput').value);
             const date = formatDate(selectedDate);
 
-            const waybackURL = `https://web.archive.org/web/https://dilbert.com/strip/${date}`;
+            const proxyURL = 'https://api.allorigins.win/raw?url=';
+            const waybackURL = `${proxyURL}https://web.archive.org/web/https://dilbert.com/strip/${date}`;
+
 
             document.getElementById('result').innerHTML = 'Loading...';
 
