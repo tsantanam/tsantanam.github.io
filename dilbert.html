@@ -48,12 +48,10 @@
 
     <div id="result"></div>
     <img id="image" src="" alt="Comic Image" style="display: none;">
-    
+
     <script>
-        // Initialize the selected date
         let selectedDate = new Date();
 
-        // Format the date to yyyy-mm-dd
         function formatDate(date) {
             const year = date.getFullYear();
             const month = ('0' + (date.getMonth() + 1)).slice(-2);
@@ -61,41 +59,39 @@
             return `${year}-${month}-${day}`;
         }
 
-        // Set the date in the input field
         function updateDateInput() {
             document.getElementById('dateInput').value = formatDate(selectedDate);
         }
 
-        // Change the selected date by the given number of days (+1 for next, -1 for previous)
         function changeDate(dayIncrement) {
             selectedDate.setDate(selectedDate.getDate() + dayIncrement);
             updateDateInput();
-            getComicImage();  // Automatically fetch the comic for the new date
+            getComicImage();
         }
 
-        // Function to get the comic image for the selected date
         async function getComicImage() {
+            // Always capture the latest date from input
+            selectedDate = new Date(document.getElementById('dateInput').value);
             const date = formatDate(selectedDate);
+
+            // Use CORS Anywhere to bypass CORS issue
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
             const waybackURL = `https://web.archive.org/web/https://dilbert.com/strip/${date}`;
 
-            // Display loading message
             document.getElementById('result').innerHTML = 'Loading...';
 
             try {
-                const response = await fetch(waybackURL);
+                const response = await fetch(proxyUrl + waybackURL);
                 const text = await response.text();
 
-                // Use regex to find the image URL (second https part)
-                const regex = /<img class="img-responsive img-comic"[^>]*src="([^"]+)"/;
+                const regex = /<img class="img-responsive img-comic"[^>]*src="([^\"]+)"/;
                 const match = regex.exec(text);
 
                 if (match && match[1]) {
-                    // Extract the second part of the URL that starts with https
                     const imgSrc = match[1];
-                    const secondUrl = imgSrc.split('https')[1]; // Split and get the second https part
-                    const finalUrl = 'https' + secondUrl; // Prepend 'https' to form the full URL
+                    const secondUrl = imgSrc.split('https')[1];
+                    const finalUrl = 'https' + secondUrl;
 
-                    // Show the image on the webpage
                     const imageElement = document.getElementById('image');
                     imageElement.src = finalUrl;
                     imageElement.style.display = 'block';
@@ -109,9 +105,8 @@
             }
         }
 
-        // Initialize the date input and get the comic for today's date
         updateDateInput();
-        getComicImage(); // Load the comic for the default selected date (today)
+        getComicImage();
     </script>
 </body>
 </html>
