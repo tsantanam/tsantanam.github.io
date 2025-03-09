@@ -76,7 +76,7 @@
         // Function to get the comic image for the selected date
         async function getComicImage() {
             const date = formatDate(selectedDate);
-            const waybackURL = `https://web.archive.org/web/${date}/https://dilbert.com/strip/${date}`;
+            const waybackURL = `https://web.archive.org/web/https://dilbert.com/strip/${date}`;
 
             // Display loading message
             document.getElementById('result').innerHTML = 'Loading...';
