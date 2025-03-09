@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dilbert Comic Reader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        #image {
+            max-width: 100%;
+            max-height: 500px;
+            margin-top: 20px;
+        }
+        .arrows {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .arrow-button {
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dilbert Comic Reader</h1>
+    <p>Enter a date from 04/16/1989 to 03/26/2023 and hit submit to get the comic image!</p>
+
+    <div class="arrows">
+        <button class="arrow-button" onclick="changeDate(-1)">&#8592; Previous</button>
+        <input type="date" id="dateInput" onchange="getComicImage()">
+        <button class="arrow-button" onclick="changeDate(1)">Next &#8594;</button>
+    </div>
+    
+    <button onclick="getComicImage()">Submit</button>
+
+    <div id="result"></div>
+    <img id="image" src="" alt="Comic Image" style="display: none;">
+    
+    <script>
+        // Initialize the selected date
+        let selectedDate = new Date();
+
+        // Format the date to yyyy-mm-dd
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = ('0' + (date.getMonth() + 1)).slice(-2);
+            const day = ('0' + date.getDate()).slice(-2);
+            return `${year}-${month}-${day}`;
+        }
+
+        // Set the date in the input field
+        function updateDateInput() {
+            document.getElementById('dateInput').value = formatDate(selectedDate);
+        }
+
+        // Change the selected date by the given number of days (+1 for next, -1 for previous)
+        function changeDate(dayIncrement) {
+            selectedDate.setDate(selectedDate.getDate() + dayIncrement);
+            updateDateInput();
+            getComicImage();  // Automatically fetch the comic for the new date
+        }
+
+        // Function to get the comic image for the selected date
+        async function getComicImage() {
+            const date = formatDate(selectedDate);
+            const waybackURL = `https://web.archive.org/web/${date}/https://dilbert.com/strip/${date}`;
+
+            // Display loading message
+            document.getElementById('result').innerHTML = 'Loading...';
+
+            try {
+                const response = await fetch(waybackURL);
+                const text = await response.text();
+
+                // Use regex to find the image URL (second https part)
+                const regex = /<img class="img-responsive img-comic"[^>]*src="([^"]+)"/;
+                const match = regex.exec(text);
+
+                if (match && match[1]) {
+                    // Extract the second part of the URL that starts with https
+                    const imgSrc = match[1];
+                    const secondUrl = imgSrc.split('https')[1]; // Split and get the second https part
+                    const finalUrl = 'https' + secondUrl; // Prepend 'https' to form the full URL
+
+                    // Show the image on the webpage
+                    const imageElement = document.getElementById('image');
+                    imageElement.src = finalUrl;
+                    imageElement.style.display = 'block';
+                    document.getElementById('result').innerHTML = 'Comic Image Loaded:';
+                } else {
+                    document.getElementById('result').innerHTML = 'No image found for the specified date.';
+                }
+            } catch (error) {
+                console.error('Error fetching the Wayback Machine page:', error);
+                document.getElementById('result').innerHTML = 'Error loading the image.';
+            }
+        }
+
+        // Initialize the date input and get the comic for today's date
+        updateDateInput();
+        getComicImage(); // Load the comic for the default selected date (today)
+    </script>
+</body>
+</html>
