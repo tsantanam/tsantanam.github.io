@@ -29,7 +29,7 @@
     <h1>Plonkards</h1>
     <div id="map"></div>
     <div id="info">
-        <div id="plonkard-set">
+        <!-- <div id="plonkard-set">
             <h3>Plonkard Set</h3>
             <select>
                 <option>Phone Codes</option>
@@ -40,38 +40,50 @@
             <select>
                 <option>Brazil</option>
             </select>
-        </div>
+        </div> -->
+        <h4>Upload your Plonkards JSON file below  and press start to begin training</h3>
+        <input type="file" id="jsonFile" name="jsonFile" onchange="processFiles(this.files)">
+        <!-- <div id="fileOutput"></div> -->
         <div id="start-button">
             <button onclick="startGame()">Start</button>
         </div>
         <div id="task"></div>
+        <p id="question"></p>
         <p id="result"></p>
+        <p id="restart"></p>
         <p id="loading">Loading...</p>
     </div>
 
     <script>
+        function processFiles(files) {
+          var file = files[0];
+
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            // var output = document.getElementById("fileOutput");  
+            // parse string to json 
+            content = JSON.parse(e.target.result);
+          };
+          reader.readAsText(file);
+        }
         const map = L.map('map').setView([20, 0], 2);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
         }).addTo(map);
-        const brazilPhoneCodes = {
-            'Acre': ['68'], 'Alagoas': ['82'], 'Amapá': ['96'], 'Amazonas': ['92','97'],
-            'Bahia': ['71','72','73','74','75','76','77','78'], 'Ceará': ['85','88'], 'Distrito Federal': ['61'], 'Espírito Santo': ['27','28','29'],
-            'Goiás': ['62','64'], 'Maranhão': ['98','99'], 'Mato Grosso': ['65','66'], 'Mato Grosso do Sul': ['67'],
-            'Minas Gerais': ['31','32','33','34','35','36','37','38','39'], 'Pará': ['91','93','94'], 'Paraíba': ['83'], 'Paraná':['41','42','43','44','45','46'],'Pernambuco': ['81','87'], 'Piauí': ['86','89'], 'Rio de Janeiro': ['21','22','23','24','25','26'], 'Rio Grande do Norte': ['84'],
-            'Rio Grande do Sul': ['51','52','53','54','55','56','57','58','59'], 'Rondônia': ['69'], 'Roraima': ['95'], 'Santa Catarina': ['47','48','49'],
-            'São Paulo': ['11','12','13','14','15','16','17','18','19'], 'Sergipe': ['79'], 'Tocantins': ['63']
-        };
 
-        let currentState = null;
+        currentQ = 0;
+        // size = Object.keys(content).length;
 
         function startGame() {
-            const states = Object.keys(brazilPhoneCodes);
-            currentState = states[Math.floor(Math.random() * states.length)];
-            const phoneCode = brazilPhoneCodes[currentState];
-            const specificCode = phoneCode[Math.floor(Math.random() * phoneCode.length)];
-            document.getElementById('task').innerHTML = `Find the state with area code: <strong>${specificCode}</strong>`;
+            if (currentQ === content.plonkards.length){
+                const questionElement = document.getElementById('restart')
+                restart.innerText = 'All plonkards have been reviewed. Please refresh the page and upload a file to start over.';
+            }
+            else{
+            const questionElement = document.getElementById('question')
+            questionElement.innerHTML = content.plonkards[currentQ].question;
+        }
         }
 
         map.on('click', function(e) {
@@ -87,22 +99,28 @@
                 .then(response => response.json())
                 .then(data => {
                     const address = data.address;
-                    const country = address.country || 'Unknown';
-                    const region = address.state || 'N/A';
+                    if (content.plonkards[currentQ].region_type === 'state'){
+                        region = address.state || 'N/A';
+                    } else if (content.plonkards[currentQ].region_type === 'city'){
+                        region = address.city || 'N/A';
+                    } else{
+                        region = address.country || 'N/A';
+                    }
 
+                    // const address = data.address;
+                    // const country = address.country || 'Unknown';
+                    // const region = address.state || 'N/A';
                     
                     loadingElement.style.display = 'none';
                     locationElement.style.display = 'block';
+                    const correct_regions = content.plonkards[currentQ].regions.toString();
+                    
+                    locationElement.innerHTML = `
+                    <strong>Your Answer: </strong> ${region}<br>
+                    <strong>Correct Answer: </strong> ${correct_regions}`;
+                    
+                    currentQ = currentQ + 1;
 
-                    if (region === currentState) {
-                        locationElement.innerHTML = `
-                        <strong>Your Answer: </strong> ${currentState}<br>
-                        <strong>Correct Answer: </strong> ${region}`;
-                    } else {
-                        locationElement.innerHTML = `
-                        <strong>Your Answer: </strong> ${currentState}<br>
-                        <strong>Correct Answer: </strong> ${region}`;
-                    }
                     startGame();
                 })
                 .catch(() => {
