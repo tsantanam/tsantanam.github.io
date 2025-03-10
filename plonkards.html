@@ -29,18 +29,6 @@
     <h1>Plonkards</h1>
     <div id="map"></div>
     <div id="info">
-        <!-- <div id="plonkard-set">
-            <h3>Plonkard Set</h3>
-            <select>
-                <option>Phone Codes</option>
-            </select>
-        </div>
-        <div id="country-set">
-            <h3>Country</h3>
-            <select>
-                <option>Brazil</option>
-            </select>
-        </div> -->
         <h4>Upload your Plonkards JSON file below  and press start to begin training</h3>
         <input type="file" id="jsonFile" name="jsonFile" onchange="processFiles(this.files)">
         <!-- <div id="fileOutput"></div> -->
@@ -49,6 +37,8 @@
         </div>
         <div id="task"></div>
         <p id="question"></p>
+        <!-- <iframe id="frame"></iframe> -->
+        <p id="img"></p>
         <p id="result"></p>
         <p id="restart"></p>
         <p id="loading">Loading...</p>
@@ -59,8 +49,7 @@
           var file = files[0];
 
           var reader = new FileReader();
-          reader.onload = function (e) {
-            // var output = document.getElementById("fileOutput");  
+          reader.onload = function (e) { 
             // parse string to json 
             content = JSON.parse(e.target.result);
           };
@@ -73,16 +62,18 @@
         }).addTo(map);
 
         currentQ = 0;
-        // size = Object.keys(content).length;
 
         function startGame() {
             if (currentQ === content.plonkards.length){
-                const questionElement = document.getElementById('restart')
+                const questionElement = document.getElementById('restart');
                 restart.innerText = 'All plonkards have been reviewed. Please refresh the page and upload a file to start over.';
             }
             else{
-            const questionElement = document.getElementById('question')
+            const questionElement = document.getElementById('question');
             questionElement.innerHTML = content.plonkards[currentQ].question;
+            const frameElement = document.getElementById('img');
+            img.innerHTML = `
+                    <h5>Image: </h5> ${content.plonkards[currentQ].img}`;
         }
         }
 
@@ -106,10 +97,6 @@
                     } else{
                         region = address.country || 'N/A';
                     }
-
-                    // const address = data.address;
-                    // const country = address.country || 'Unknown';
-                    // const region = address.state || 'N/A';
                     
                     loadingElement.style.display = 'none';
                     locationElement.style.display = 'block';
