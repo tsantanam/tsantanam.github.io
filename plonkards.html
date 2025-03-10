@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plonkards</title>
+    <style>
+        #map {
+            height: 500px;
+            width: 60%;
+            float: left;
+        }
+        #info {
+            width: 35%;
+            float: left;
+            padding: 10px;
+        }
+        #loading {
+            display: none;
+        }
+        #plonkard-set, #country-set, #start-button {
+            margin-top: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+</head>
+<body>
+    <h1>Plonkards</h1>
+    <div id="map"></div>
+    <div id="info">
+        <div id="plonkard-set">
+            <h3>Plonkard Set</h3>
+            <select>
+                <option>Phone Codes</option>
+            </select>
+        </div>
+        <div id="country-set">
+            <h3>Country</h3>
+            <select>
+                <option>Brazil</option>
+            </select>
+        </div>
+        <div id="start-button">
+            <button onclick="startGame()">Start</button>
+        </div>
+        <div id="task"></div>
+        <p id="result"></p>
+        <p id="loading">Loading...</p>
+    </div>
+
+    <script>
+        const map = L.map('map').setView([20, 0], 2);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+        const brazilPhoneCodes = {
+            'Acre': ['68'], 'Alagoas': ['82'], 'Amapá': ['96'], 'Amazonas': ['92','97'],
+            'Bahia': ['71','72','73','74','75','76','77','78'], 'Ceará': ['85','88'], 'Distrito Federal': ['61'], 'Espírito Santo': ['27','28','29'],
+            'Goiás': ['62','64'], 'Maranhão': ['98','99'], 'Mato Grosso': ['65','66'], 'Mato Grosso do Sul': ['67'],
+            'Minas Gerais': ['31','32','33','34','35','36','37','38','39'], 'Pará': ['91','93','94'], 'Paraíba': ['83'], 'Paraná':['41','42','43','44','45','46'],'Pernambuco': ['81','87'], 'Piauí': ['86','89'], 'Rio de Janeiro': ['21','22','23','24','25','26'], 'Rio Grande do Norte': ['84'],
+            'Rio Grande do Sul': ['51','52','53','54','55','56','57','58','59'], 'Rondônia': ['69'], 'Roraima': ['95'], 'Santa Catarina': ['47','48','49'],
+            'São Paulo': ['11','12','13','14','15','16','17','18','19'], 'Sergipe': ['79'], 'Tocantins': ['63']
+        };
+
+        let currentState = null;
+
+        function startGame() {
+            const states = Object.keys(brazilPhoneCodes);
+            currentState = states[Math.floor(Math.random() * states.length)];
+            const phoneCode = brazilPhoneCodes[currentState];
+            const specificCode = phoneCode[Math.floor(Math.random() * phoneCode.length)];
+            document.getElementById('task').innerHTML = `Find the state with area code: <strong>${specificCode}</strong>`;
+        }
+
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            const locationElement = document.getElementById('result');
+            const loadingElement = document.getElementById('loading');
+
+            locationElement.style.display = 'none';
+            loadingElement.style.display = 'block';
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    const address = data.address;
+                    const country = address.country || 'Unknown';
+                    const region = address.state || 'N/A';
+
+                    
+                    loadingElement.style.display = 'none';
+                    locationElement.style.display = 'block';
+
+                    if (region === currentState) {
+                        locationElement.innerHTML = `
+                        <strong>Your Answer: </strong> ${currentState}<br>
+                        <strong>Correct Answer: </strong> ${region}`;
+                    } else {
+                        locationElement.innerHTML = `
+                        <strong>Your Answer: </strong> ${currentState}<br>
+                        <strong>Correct Answer: </strong> ${region}`;
+                    }
+                    startGame();
+                })
+                .catch(() => {
+                    result.innerText = 'Error! Result not found';
+                    loadingElement.style.display = 'none';
+                    locationElement.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>
